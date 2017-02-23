@@ -1,14 +1,11 @@
-Legion
-======
+# Legion
 
 Legion attempts to be a fully systemintegrated synchronisation for machines via
 network.
-
-
+## Installation
 make        -> compiles the programm and names it as "legion"
 
 make clean  -> cleans the build directory and removes the programm
-
 
 TODO:
 
