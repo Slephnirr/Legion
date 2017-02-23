@@ -141,7 +141,7 @@ void remove_file_entry_in_dir_entry(struct dir_entry *dir,
         }
 }
 
-void remove_file_entry_in_list(struct file_entry *file)
+void remove_file_entry_from_list(struct file_entry *file)
 {
         struct file_list_entry *prev_list = NULL;
         struct file_list_entry *curr_list = start_file_list;
@@ -339,7 +339,7 @@ void add_dir_entry_to_list(struct dir_entry *dir)
         }
 }
 
-int does_dir_entry_exist_in_list(char *str)
+int does_dir_entry_exist_from_list(char *str)
 {
         int exist = 0;
         char *path;
@@ -382,7 +382,7 @@ void remove_dir_entry_in_parent_dir_entry(struct dir_entry** Pdir)
         free(path);
 }
 
-void remove_dir_entry_in_list(struct dir_entry *dir)
+void remove_dir_entry_from_list(struct dir_entry *dir)
 {
         struct dir_list_entry *prev_list = NULL;
         struct dir_list_entry *curr_list = start_dir_list;
@@ -414,7 +414,7 @@ void remove_dir_entry_in_list(struct dir_entry *dir)
 
 // void update_file_properties(char *path)
 // {
-//         struct file_entry *file = search_file_entry_in_list(path);
+//         struct file_entry *file = search_file_entry_from_list(path);
 //         struct stat* attr = calloc(1,sizeof(struct stat));
 //         if (stat(path, attr) == 0) {
 //                 // tlm = time_last_modified

@@ -48,7 +48,7 @@ struct file_entry *search_file_entry_in_list(char* str);
 void remove_file_entry_in_dir_entry(struct dir_entry *dir,
                                                 struct file_entry *file);
 
-void remove_file_entry_in_list(struct file_entry *file);
+void remove_file_entry_from_list(struct file_entry *file);
 
 char *get_full_dir_path(struct dir_entry *dir);
 
@@ -68,8 +68,8 @@ void add_dir_entry_to_parent_dir_entry(struct dir_entry *dir);
 
 void add_dir_entry_to_list(struct dir_entry *dir);
 
-int does_dir_entry_exist_in_list(char *str);
+int does_dir_entry_exist_from_list(char *str);
 
 void remove_dir_entry_in_parent_dir_entry(struct dir_entry** Pdir);
 
-void remove_dir_entry_in_list(struct dir_entry *dir);
+void remove_dir_entry_from_list(struct dir_entry *dir);
