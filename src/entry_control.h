@@ -68,7 +68,7 @@ void add_dir_entry_to_parent_dir_entry(struct dir_entry *dir);
 
 void add_dir_entry_to_list(struct dir_entry *dir);
 
-int does_dir_entry_exist_from_list(char *str);
+int does_dir_entry_exist_in_list(char *str);
 
 void remove_dir_entry_in_parent_dir_entry(struct dir_entry** Pdir);
 

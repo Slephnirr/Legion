@@ -5,7 +5,7 @@
 
 struct watch_entry{
         int wd;
-        char* path;
+        char* loc;
 };
 
 struct watch_list_entry{
@@ -28,5 +28,5 @@ struct watch_entry *search_watch_in_list(struct watch_list_entry *start_list,
 void add_watch_entry_to_list(struct watch_list_entry **Pstart_list,
                                           struct watch_entry *watch);
 
-void remove_watch_entry_in_list(struct watch_list_entry **Pstart_list,
+void remove_watch_entry_from_list(struct watch_list_entry **Pstart_list,
                                             struct watch_entry *watch);

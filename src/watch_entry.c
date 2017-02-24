@@ -21,11 +21,11 @@ struct watch_entry *create_watch_entry(char* str, int wd)
 {
         struct watch_entry *watch = calloc(1, sizeof(struct watch_entry));
 
-        char *path = calloc((strlen(str) + 1), sizeof(char));
-        strcpy(path, str);
+        char *loc = calloc((strlen(str) + 1), sizeof(char));
+        strcpy(loc, str);
 
         watch->wd = wd;
-        watch->path = path;
+        watch->loc = loc;
 
         return watch;
 }
@@ -33,8 +33,8 @@ struct watch_entry *create_watch_entry(char* str, int wd)
 void delete_watch_entry(struct watch_entry **Pwatch)
 {
         struct watch_entry *watch = *Pwatch;
-        free((watch->path));
-        watch->path = NULL;
+        free((watch->loc));
+        watch->loc = NULL;
         free(watch);
         watch = NULL;
 }
@@ -42,7 +42,7 @@ void delete_watch_entry(struct watch_entry **Pwatch)
 int compare_watch(struct watch_entry *A, struct watch_entry *B)
 {
         int match = 0;
-        if(((A->wd) == (B->wd)) && (strcmp((A->path), (B->path)) == 0))
+        if(((A->wd) == (B->wd)) && (strcmp((A->loc), (B->loc)) == 0))
                 match = 1;
         return match;
 }
@@ -71,7 +71,7 @@ struct watch_entry *search_watch_in_list(struct watch_list_entry *start_list,
         while(curr_list != NULL) {
                 cwatch = curr_list->watch;
 
-                if (strcmp(str, cwatch->path) == 0)
+                if (strcmp(str, cwatch->loc) == 0)
                         return cwatch;
 
                 curr_list = curr_list->next;
@@ -99,7 +99,7 @@ void add_watch_entry_to_list(struct watch_list_entry **Pstart_list,
 }
 
 
-void remove_watch_entry_in_list(struct watch_list_entry **Pstart_list,
+void remove_watch_entry_from_list(struct watch_list_entry **Pstart_list,
                                              struct watch_entry *watch)
 {
         struct watch_list_entry *prev_list = NULL;

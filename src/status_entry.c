@@ -112,7 +112,7 @@ void add_status_entry_to_list(struct status_list_entry **Pstart_list,
         }
 }
 
-void remove_status_entry_in_list(struct status_list_entry **Pstart_list,
+void remove_status_entry_from_list(struct status_list_entry **Pstart_list,
                                              struct status_entry *status)
 {
         struct status_list_entry *prev_list = NULL;
