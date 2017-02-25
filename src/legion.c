@@ -379,7 +379,7 @@ char *get_rel_event_path(struct inotify_event *event)
         return loc;
 }
 
-struct status_entry *process_event_INCREATE(struct inotify_event *event)
+struct status_entry *process_event_IN_CREATE(struct inotify_event *event)
 {
         char* path = get_full_event_path(event);
         char* loc = get_rel_event_path(event);
@@ -413,7 +413,7 @@ struct status_entry *process_event_INCREATE(struct inotify_event *event)
         return status;
 }
 
-struct status_entry *process_event_INDELETE(struct inotify_event *event)
+struct status_entry *process_event_IN_DELETE(struct inotify_event *event)
 {
         char* path = get_full_event_path(event);
         char* loc = get_rel_event_path(event);
@@ -468,7 +468,7 @@ struct status_entry *process_event_INDELETE(struct inotify_event *event)
         }
 }
 
-struct status_entry *process_event_INCLOSEWRITE(struct inotify_event *event)
+struct status_entry *process_event_IN_CLOSE_WRITE(struct inotify_event *event)
 {
         char* path = get_full_event_path(event);
         char* loc = get_rel_event_path(event);
@@ -508,7 +508,7 @@ struct status_entry *process_event_INCLOSEWRITE(struct inotify_event *event)
         }
 }
 
-struct status_entry* process_event_INMOVEDFROM(struct inotify_event *event)
+struct status_entry* process_event_IN_MOVED_FROM(struct inotify_event *event)
 {
         char* path = get_full_event_path(event);
         char* loc = get_rel_event_path(event);
@@ -563,7 +563,7 @@ struct status_entry* process_event_INMOVEDFROM(struct inotify_event *event)
         }
 }
 
-struct status_entry* process_event_INMOVEDTO(struct inotify_event* event)
+struct status_entry* process_event_IN_MOVED_TO(struct inotify_event* event)
 {
         char* path = get_full_event_path(event);
         char* loc = get_rel_event_path(event);
@@ -614,24 +614,24 @@ struct status_entry* process_event(struct inotify_event* event)
         struct status_entry* status = NULL;
 
         if ((event->mask) & IN_CREATE)
-                status = process_event_INCREATE(event);
+                status = process_event_IN_CREATE(event);
 
         if ((event->mask) & IN_DELETE)
-                status = process_event_INDELETE(event);
+                status = process_event_IN_DELETE(event);
 
         if ((event->mask) & IN_CLOSE_WRITE)
-                status = process_event_INCLOSEWRITE(event);
+                status = process_event_IN_CLOSE_WRITE(event);
 
         if ((event->mask) & IN_MOVED_FROM)
-                status = process_event_INMOVEDFROM(event);
+                status = process_event_IN_MOVED_FROM(event);
 
         if ((event->mask) & IN_MOVED_TO)
-                status = process_event_INMOVEDTO(event);
+                status = process_event_IN_MOVED_TO(event);
 
         return status;
 }
 
-struct status_entry* search_status_entry_INMOVED(struct status_entry* entry)
+struct status_entry* search_status_entry_IN_MOVED(struct status_entry* entry)
 {
         struct status_list_entry* curr_list = start_changes_list;
         while(curr_list != NULL) {
@@ -644,14 +644,14 @@ struct status_entry* search_status_entry_INMOVED(struct status_entry* entry)
         return NULL;
 }
 
-void remove_status_entries_between_events_of_INMOVED(void)
+void remove_status_entries_between_events_of_IN_MOVED(void)
 {
         struct status_list_entry* curr_list = start_changes_list;
         while(curr_list != NULL) {
                 struct status_entry* status = curr_list->status;
                 struct status_entry* rel_status = NULL;
                 if(status->stat == 'F')
-                        rel_status = search_status_entry_INMOVED(status);
+                        rel_status = search_status_entry_IN_MOVED(status);
 
                 if (rel_status != NULL) {
                         struct status_list_entry* next_list = curr_list->next;
@@ -672,14 +672,14 @@ void remove_status_entries_between_events_of_INMOVED(void)
         }
 }
 
-void remove_single_events_of_INMOVED(void)
+void remove_single_events_of_IN_MOVED(void)
 {
         struct status_list_entry* curr_list = start_changes_list;
         while(curr_list != NULL) {
                 struct status_entry* status = curr_list->status;
                 struct status_entry* rel_status = NULL;
                 if((status->stat == 'F') || (status->stat == 'T')) {
-                        rel_status = search_status_entry_INMOVED(status);
+                        rel_status = search_status_entry_IN_MOVED(status);
 
                         if (rel_status == NULL) {
                                 pthread_mutex_lock(&mutex_changes);
@@ -694,8 +694,8 @@ void remove_single_events_of_INMOVED(void)
 
 void analyse_changes_list(void)
 {
-        remove_status_entries_between_events_of_INMOVED();
-        remove_single_events_of_INMOVED();
+        remove_status_entries_between_events_of_IN_MOVED();
+        remove_single_events_of_IN_MOVED();
 }
 
 void confirm_changes(void)
@@ -811,7 +811,7 @@ void provide_updates_for_node(int num, int sock)
         }
 }
 
-int process_update_INCREATE(struct status_entry* status, int sock)
+int process_update_IN_CREATE(struct status_entry* status, int sock)
 {
         char type = status->type;
         char* path = get_full_stat_path(status);
@@ -839,7 +839,7 @@ int process_update_INCREATE(struct status_entry* status, int sock)
         return num;
 }
 
-int process_update_INDELETE(struct status_entry* status, int sock)
+int process_update_IN_DELETE(struct status_entry* status, int sock)
 {
         char type = status->type;
         char *path = get_full_stat_path(status);
@@ -861,7 +861,7 @@ int process_update_INDELETE(struct status_entry* status, int sock)
         return num;
 }
 
-int process_update_INCLOSEWRITE(struct status_entry* status, int sock)
+int process_update_IN_CLOSE_WRITE(struct status_entry* status, int sock)
 {
         char type = status->type;
         char *path = get_full_stat_path(status);
@@ -881,7 +881,7 @@ int process_update_INCLOSEWRITE(struct status_entry* status, int sock)
         return num;
 }
 
-int process_update_INMOVEDFROM(struct status_list_entry** Pcurr_list, struct
+int process_update_IN_MOVED_FROM(struct status_list_entry** Pcurr_list, struct
                                              status_entry* status, int sock)
 {
         char type = status->type;
@@ -985,20 +985,20 @@ int process_updates_on_node(int sock)
                 char curr_stat = status->stat;
 
                 if(curr_stat == 'C')
-                        num += process_update_INCREATE(status, sock);
+                        num += process_update_IN_CREATE(status, sock);
 
                 if(curr_stat == 'D') {
-                        if(process_update_INDELETE(status, sock) == 0) {
+                        if(process_update_IN_DELETE(status, sock) == 0) {
                                 sd_journal_print(LOG_ERR, "Couldn't delete: %s\
                                                              \n", status->name);
                                 exit(EXIT_FAILURE);
                         }
                 }
                 if(curr_stat == 'W')
-                        num += process_update_INCLOSEWRITE(status, sock);
+                        num += process_update_IN_CLOSE_WRITE(status, sock);
 
                 if(curr_stat == 'F') {
-                        int cnum = process_update_INMOVEDFROM(&curr_list,
+                        int cnum = process_update_IN_MOVED_FROM(&curr_list,
                                                             status, sock);
                         if (cnum == 0 || cnum == 1)
                                 continue;

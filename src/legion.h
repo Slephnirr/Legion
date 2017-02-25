@@ -29,23 +29,23 @@ char *get_full_event_path(struct inotify_event *event);
 
 char *get_rel_event_path(struct inotify_event *event);
 
-struct status_entry *process_event_INCREATE(struct inotify_event *event);
+struct status_entry *process_event_IN_CREATE(struct inotify_event *event);
 
-struct status_entry *process_event_INDELETE(struct inotify_event *event);
+struct status_entry *process_event_IN_DELETE(struct inotify_event *event);
 
-struct status_entry *process_event_INCLOSEWRITE(struct inotify_event *event);
+struct status_entry *process_event_IN_CLOSE_WRITE(struct inotify_event *event);
 
-struct status_entry* process_event_INMOVEDFROM(struct inotify_event *event);
+struct status_entry* process_event_IN_MOVED_FROM(struct inotify_event *event);
 
-struct status_entry* process_event_INMOVEDTO(struct inotify_event* event);
+struct status_entry* process_event_IN_MOVED_TO(struct inotify_event* event);
 
 struct status_entry* process_event(struct inotify_event* event);
 
-struct status_entry* search_status_entry_INMOVED(struct status_entry* entry);
+struct status_entry* search_status_entry_IN_MOVED(struct status_entry* entry);
 
-void remove_status_entries_between_events_of_INMOVED(void);
+void remove_status_entries_between_events_of_IN_MOVED(void);
 
-void remove_single_events_of_INMOVED(void);
+void remove_single_events_of_IN_MOVED(void);
 
 void analyse_changes_list(void);
 
@@ -55,13 +55,13 @@ int count_files_to_submit(void);
 
 void provide_updates_for_node(int num, int sock);
 
-int process_update_INCREATE(struct status_entry* status, int sock);
+int process_update_IN_CREATE(struct status_entry* status, int sock);
 
-int process_update_INDELETE(struct status_entry* status, int sock);
+int process_update_IN_DELETE(struct status_entry* status, int sock);
 
-int process_update_INCLOSEWRITE(struct status_entry* status, int sock);
+int process_update_IN_CLOSE_WRITE(struct status_entry* status, int sock);
 
-int process_update_INMOVEDFROM(struct status_list_entry** Pcurr_list, struct
+int process_update_IN_MOVED_FROM(struct status_list_entry** Pcurr_list, struct
                                              status_entry* status, int sock);
 
 int process_updates_on_node(int sock);

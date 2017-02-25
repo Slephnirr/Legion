@@ -38,16 +38,16 @@ int start_listening(struct sockaddr_in* addr)
 
         int csock = socket(AF_INET,SOCK_STREAM,0);
         if(csock == -1) {
-                sd_journal_print(LOG_ERR, "Couldn't create socket!\n");
+                sd_journal_print(LOG_ERR, "couldn't create socket!\n");
                 exit(EXIT_FAILURE);
         } else {
                 if(bind(csock, (struct sockaddr *) addr, sizeof(*addr))!= 0) {
-                        sd_journal_print(LOG_ERR, "Port busy!\n");
+                        sd_journal_print(LOG_ERR, "port busy!\n");
                         exit(EXIT_FAILURE);
                 } else {
-                        sd_journal_print(LOG_INFO, "Port bound!\n");
+                        sd_journal_print(LOG_INFO, "port bound...\n");
                         listen(csock, 10);
-                        sd_journal_print(LOG_INFO, "Start listening!\n");
+                        sd_journal_print(LOG_INFO, "start listening...\n");
                         return csock;
                 }
         }
@@ -87,12 +87,12 @@ int connect_to_server(const char *dest)
         inet_aton(dest, &(dest_addr->sin_addr));
         int sock = socket(AF_INET,SOCK_STREAM,0);
         if(sock == -1) {
-                sd_journal_print(LOG_ERR, "Couldn't create socket!\n");
+                sd_journal_print(LOG_ERR, "couldn't create socket!\n");
                 exit(EXIT_FAILURE);
         } else {
                 if(connect(sock,(struct sockaddr *) dest_addr,
                                         sizeof(*dest_addr))!= 0) {
-                        sd_journal_print(LOG_ERR, "Couldn't connect to \
+                        sd_journal_print(LOG_ERR, "couldn't connect to \
                                                         destination!\n");
                         exit(EXIT_FAILURE);
                 } else {
@@ -109,7 +109,7 @@ int close_socket(int sock)
 void send_int(int num, int sock)
 {
         if(write(sock, &num, sizeof(int)) != sizeof(int)) {
-                printf("Couldn't write to socket!\n");
+                printf("couldn't write to socket!\n");
                 exit(EXIT_FAILURE);
         }
 }
@@ -118,7 +118,7 @@ int receive_int(int sock)
 {
         int* Pnum = calloc(1, sizeof(int));
         if (read(sock, Pnum, sizeof(int)) != sizeof(int) ) {
-                printf("Couldn't read from socket!\n");
+                printf("couldn't read from socket!\n");
                 exit(EXIT_FAILURE);
         }
         int num = *Pnum;
@@ -129,7 +129,7 @@ int receive_int(int sock)
 void send_char(char c, int sock)
 {
         if(write(sock, &c, sizeof(char)) != sizeof(char)) {
-                printf("Couldn't write to socket!\n");
+                printf("couldn't write to socket!\n");
                 exit(EXIT_FAILURE);
         }
 }
@@ -138,7 +138,7 @@ char receive_char(int sock)
 {
         int *Pc = calloc(1, sizeof(char));
         if (read(sock, Pc, sizeof(char)) != sizeof(char) ) {
-                printf("Couldn't read from socket!\n");
+                printf("couldn't read from socket!\n");
                 exit(EXIT_FAILURE);
         }
         char c = *Pc;
@@ -150,7 +150,7 @@ char receive_char(int sock)
 void send_uint32_t(uint32_t num, int sock)
 {
         if(write(sock, &num, sizeof(uint32_t)) != sizeof(uint32_t)) {
-                printf("Couldn't write to socket!\n");
+                printf("couldn't write to socket!\n");
                 exit(EXIT_FAILURE);
         }
 }
@@ -159,7 +159,7 @@ uint32_t receive_uint32_t(int sock)
 {
         uint32_t *Pnum = calloc(1, sizeof(uint32_t));
         if (read(sock, Pnum, sizeof(uint32_t)) != sizeof(uint32_t)) {
-                printf("Couldn't read from socket!\n");
+                printf("couldn't read from socket!\n");
                 exit(EXIT_FAILURE);
         }
         uint32_t num = *Pnum;
@@ -172,7 +172,7 @@ void send_string(const char* str, int sock)
         int str_len = strlen(str);
         send_int(str_len, sock);
         if(write(sock, str, str_len) != str_len) {
-                sd_journal_print(LOG_ERR, "Couldn't write to socket!\n");
+                sd_journal_print(LOG_ERR, "couldn't write to socket!\n");
                 exit(EXIT_FAILURE);
         }
 }
@@ -182,7 +182,7 @@ char *receive_string(int sock)
         int str_len = receive_int(sock);
         char *str = calloc((str_len + 1), sizeof(char));
         if(read(sock, str, str_len) != str_len) {
-                sd_journal_print(LOG_ERR, "Couldn't read from socket!\n");
+                sd_journal_print(LOG_ERR, "couldn't read from socket!\n");
                 exit(EXIT_FAILURE);
         }
         return str;
@@ -251,7 +251,7 @@ void send_status_list(struct status_list_entry **Pstart_list, int sock)
 
                         pthread_mutex_unlock( &mutex_changes );
                 } else {
-                        sd_journal_print(LOG_ERR, "StatusList transmission out\
+                        sd_journal_print(LOG_ERR, "statuslist transmission out\
                                                                    of sync!\n");
                         exit(EXIT_FAILURE);
                 }
@@ -291,7 +291,7 @@ void send_file(const char *path, int sock)
         if (stat(path, attr) == 0) {
                 f_size =  attr->st_size;
         } else {
-                sd_journal_print(LOG_ERR, "Couldn't read file.\n");
+                sd_journal_print(LOG_ERR, "couldn't read file.\n");
                 exit(EXIT_FAILURE);
         }
         free(attr);
@@ -300,7 +300,7 @@ void send_file(const char *path, int sock)
 
         int fd;
         if ((fd = open(path, O_RDONLY)) < 0 ) {
-                sd_journal_print(LOG_ERR, "Can't open file to send!\n");
+                sd_journal_print(LOG_ERR, "can't open file to send!\n");
                 exit(EXIT_FAILURE);
         } else {
                 int  n;
@@ -311,7 +311,7 @@ void send_file(const char *path, int sock)
                         n = read(fd, buffer, sizeof(buffer));
                         buffer[n] = 0;
                         if(write(sock, buffer, n) != n) {
-                                sd_journal_print(LOG_ERR, "Couldn't write to\
+                                sd_journal_print(LOG_ERR, "couldn't write to\
                                                                   socket!\n");
                                 exit(EXIT_FAILURE);
                         }
@@ -327,7 +327,7 @@ void receive_file(const char *path, int sock)
 
         int fd;
         if ((fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644) ) < 0) {
-                sd_journal_print(LOG_ERR, "Can't open file to write!\n");
+                sd_journal_print(LOG_ERR, "can't open file to write!\n");
                 exit(EXIT_FAILURE);
         } else {
                 int  n;
@@ -337,7 +337,7 @@ void receive_file(const char *path, int sock)
                         n = read(sock, buffer, sizeof(buffer));
                         buffer[n] = 0;
                         if(write(fd, buffer, n) != n) {
-                                sd_journal_print(LOG_ERR, "Couldn't write to\
+                                sd_journal_print(LOG_ERR, "couldn't write to\
                                                                     file!\n");
                                 exit(EXIT_FAILURE);
                         }

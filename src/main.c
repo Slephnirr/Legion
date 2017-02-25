@@ -164,7 +164,7 @@ static void* process_events_thread(void* arg)
         while(1) {
                 pthread_mutex_lock(&mutex_PE_thread);
                 pthread_cond_wait(&cond_mutex_2, &mutex_PE_thread);
-                pthread_mutex_unlock( &mutex_PE_thread );
+                pthread_mutex_unlock(&mutex_PE_thread);
 
                 sleep(1);
 
@@ -180,7 +180,7 @@ static void* process_events_thread(void* arg)
                         }
                         pthread_mutex_lock(&mutex_event);
                         remove_event_from_list(&start_event_list, curr_event);
-                        pthread_mutex_unlock( &mutex_event);
+                        pthread_mutex_unlock(&mutex_event);
                 }
 
                 analyse_changes_list();
@@ -240,8 +240,11 @@ static void* send_changes_thread(void* arg)
 
 int main(void)
 {
-        // device_ip = "192.168.188.33";
-        device_ip = "192.168.188.53";
+        printf("creating testenvironment...\n");
+        create_test_env();
+
+        // device_ip = "192.168.178.24";
+        device_ip = "192.168.178.20";
 
         inotify_instance = inotify_init();
         if(inotify_instance == -1 ) {
@@ -269,8 +272,6 @@ int main(void)
                 sd_journal_print(LOG_ERR, "Couldn't create thread!\n");
                 exit(EXIT_FAILURE);
         }
-
-        create_test_env();
 
         int csock;
         int dsock;
