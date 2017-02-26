@@ -12,10 +12,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <pthread.h>
 
 #include <systemd/sd-journal.h>
 
-//#include "watch_entry.h"
+#include "status_entry.h"
+#include "watch_entry.h"
 #include "entry_control.h"
 
 int does_entry_exist_in_file_system(const char* str)
@@ -411,6 +413,182 @@ void remove_dir_entry_from_list(struct dir_entry *dir)
         }
 }
 
+/*
+ * Caution: this code is very messy atm and needs to be rewritten. It's only
+ * supposed to work so don't judge it.
+ */
+void analyse_dir_to_monitor(char* path)
+{
+        struct dir_entry *new_dir;
+        if(does_dir_entry_exist_in_list(path) != 1) {
+                int watch = inotify_add_watch(inotify_instance, path,
+                        IN_CREATE | IN_DELETE | IN_CLOSE_WRITE | IN_MOVE);
+
+                struct watch_entry *new_watch = create_watch_entry(path, watch);
+                add_watch_entry_to_list(&start_watch_list, new_watch);
+
+                new_dir = create_dir_entry(path, watch);
+                add_dir_entry_to_list(new_dir);
+                add_dir_entry_to_parent_dir_entry(new_dir);
+
+                char *loc = (char*) new_dir->loc;
+                struct status_entry *status = create_status_entry(loc, 'D',
+                                                                        'C', 0);
+                pthread_mutex_lock(&mutex_changes);
+                add_status_entry_to_list(&start_changes_list, status);
+                pthread_mutex_unlock(&mutex_changes);
+        } else {
+                new_dir = search_dir_entry_in_list(path);
+        }
+
+        struct dir_list_entry *start_subdir = NULL;
+        struct dir_list_entry *prev_list = NULL;
+        struct dir_list_entry *curr_list = start_subdir;
+
+        DIR *dir_stream;
+        if((dir_stream = opendir(path)) != NULL) {
+                int cint;
+                struct dirent *entry;
+                // Read the content of the open directory
+                while((entry = readdir(dir_stream)) != NULL) {
+                        // Take out the "." and ".." directory links in unix
+                        // systems
+                        if (strcmp((entry->d_name), ".") != 0 && strcmp(
+                                             (entry->d_name),"..") != 0) {
+                        	char* full_entry = calloc((strlen(path) + 1 +
+                                strlen(entry->d_name) + 1), sizeof(char));
+                                strcpy(full_entry, path);
+                                strcat(full_entry, "/");
+                                strcat(full_entry, (entry->d_name));
+
+                                // 2 for Directories; 1 for Files; 0 unkown error.
+                                cint = entry_type(full_entry);
+                                // Entry is a Directory.
+                                if(cint == 2) {
+                                        int watch = inotify_add_watch(
+                                                inotify_instance, full_entry,
+                                                IN_CREATE | IN_DELETE |
+                                                IN_CLOSE_WRITE | IN_MOVE);
+
+                                        struct watch_entry *new_watch =
+                                          create_watch_entry(full_entry, watch);
+                                        add_watch_entry_to_list(
+                                                &start_watch_list, new_watch);
+
+                                        struct dir_entry *new_subdir =
+                                        create_dir_entry(full_entry, watch);
+                                        add_dir_entry_to_parent_dir_entry(
+                                                                new_subdir);
+                                        add_dir_entry_to_list(new_subdir);
+
+                                        char* subdir_loc = (char*)new_subdir->loc;
+                                        struct status_entry *status =
+                                        create_status_entry(subdir_loc, 'D',
+                                                                        'C', 0);
+
+                                        pthread_mutex_lock(&mutex_changes);
+                                        add_status_entry_to_list(
+                                                &start_changes_list, status);
+                                        pthread_mutex_unlock(&mutex_changes);
+
+                                        struct dir_list_entry *new_list =
+                                        calloc(1, sizeof(struct dir_list_entry));
+                                        new_list->dir = new_subdir;
+                                        if(curr_list == NULL) {
+                                                start_subdir = new_list;
+                                                curr_list = start_subdir;
+                                        } else {
+                                                curr_list->next = new_list;
+                                                curr_list = new_list;
+                                        }
+                                // Entry is a File.
+                                } else if (cint == 1) {
+                                        struct file_entry *new_file =
+                                                  create_file_entry(full_entry);
+                                        add_file_entry_to_dir_entry(new_dir,
+                                                                   new_file);
+                                        add_file_entry_to_list(new_file);
+
+                                        char* loc = (char*)new_file->loc;
+                                        struct status_entry *status =
+                                        create_status_entry(loc, 'F', 'C', 0);
+
+                                        pthread_mutex_lock(&mutex_changes);
+                                        add_status_entry_to_list(
+                                                &start_changes_list, status);
+                                        pthread_mutex_unlock(&mutex_changes);
+                                } else {
+                                        sd_journal_print(LOG_ERR, "Couldn't \
+                                                determine Nature of Entry.\n");
+                                        exit(EXIT_FAILURE);
+                                }
+                                free(full_entry);
+                        }
+                }
+                closedir(dir_stream);
+                curr_list = start_subdir;
+                while(curr_list != NULL) {
+                        char *path = get_full_dir_path(curr_list->dir);
+                        analyse_dir_to_monitor(path);
+                        free(path);
+
+                        prev_list = curr_list;
+                        curr_list = curr_list->next;
+
+                        prev_list->next = NULL;
+                        free(prev_list);
+                }
+
+        } else {
+                sd_journal_print(LOG_ERR, "Couldn't open directory.\n");
+                exit(EXIT_FAILURE);
+        }
+}
+
+void remove_dir_to_monitor(char* path)
+{
+        struct dir_entry *dir = search_dir_entry_in_list(path);
+
+        while((dir->start_subdir) != NULL) {
+                struct dir_entry *curr_subdir = dir->start_subdir;
+
+                while(curr_subdir->next != NULL)
+                        curr_subdir = curr_subdir->next;
+
+                char* subdir_path = get_full_dir_path(curr_subdir);
+                remove_dir_to_monitor(subdir_path);
+        }
+
+        while((dir->start_file) != NULL) {
+                struct file_entry *curr_file = dir->start_file;
+                while(curr_file->next != NULL)
+                        curr_file = curr_file->next;
+
+                char* loc = (char*) curr_file->loc;
+                struct status_entry *status = create_status_entry(loc,
+                                                                'F', 'D', 0);
+
+                pthread_mutex_lock(&mutex_changes);
+                add_status_entry_to_list(&start_changes_list, status);
+                pthread_mutex_unlock(&mutex_changes);
+
+                remove_file_entry_from_list(curr_file);
+                remove_file_entry_in_dir_entry(dir, curr_file);
+        }
+
+        char* loc  = (char*) dir->loc;
+        struct status_entry *status = create_status_entry(loc, 'D', 'D', 0);
+
+        pthread_mutex_lock(&mutex_changes);
+        add_status_entry_to_list(&start_changes_list, status);
+        pthread_mutex_unlock(&mutex_changes);
+
+        struct watch_entry *watch = search_watch_in_list(start_watch_list, path);
+        remove_watch_entry_from_list(&start_watch_list, watch);
+
+        remove_dir_entry_from_list(dir);
+        remove_dir_entry_in_parent_dir_entry(&dir);
+}
 
 // void update_file_properties(char *path)
 // {

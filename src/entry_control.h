@@ -5,9 +5,12 @@
 const char* user;
 int inotify_instance;
 
+pthread_mutex_t mutex_changes;
+
 struct file_list_entry *start_file_list;
 struct dir_list_entry *start_dir_list;
 struct watch_list_entry *start_watch_list;
+struct status_list_entry *start_changes_list;
 
 
 struct file_entry {
@@ -73,3 +76,7 @@ int does_dir_entry_exist_in_list(char *str);
 void remove_dir_entry_in_parent_dir_entry(struct dir_entry** Pdir);
 
 void remove_dir_entry_from_list(struct dir_entry *dir);
+
+void analyse_dir_to_monitor(char* path);
+
+void remove_dir_to_monitor(char* path);
